@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru" class="st-intro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>Русская сказка — коллекция «Штандарт»</title>
+<!--
+  Страница коллекции «Штандарт» — из экспорта Figma (Frame 13, 1851:63).
+  Правки относительно макета:
+  · шапка — та же, что на главной (тёмная, закреплена, размытие при прокрутке);
+  · фото обложки заменено на новое (1297×1213 → 1920, Ланцош + лёгкая резкость);
+  · лист с названием и всё ниже подняты на 140px — «Штандарт» виден на первом экране;
+  · название коллекции — шрифт Forum, по центру листа.
+  Копия «как в макете»: standart/_сверка/standart.как-в-макете.html
+-->
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #A7C1D2; }
+  .page { display: block; width: 1920px; height: 6837px; -webkit-font-smoothing: antialiased; }
+  .page text[font-family="Libre Baskerville"] { font-family: 'Libre Baskerville', 'Noto Sans', sans-serif; }
+  .page text[font-family="Manrope"] { font-family: 'Manrope', sans-serif; }
+  .page text.coll-title { font-family: 'Forum', serif; }
+  .page image.ship { mix-blend-mode: multiply; }   /* белый фон картинок растворяется в листе */
+
+  .wrap { position: relative; width: 1920px; }
+  /* =====================================================================
+     ПОЯВЛЕНИЕ СТРАНИЦЫ (по принципу главной)
+     1. Фото обложки отъезжает: 1.14 → 1, чуть проясняясь.
+     2. Белый лист с заголовком поднимается снизу вверх.
+     3. На листе по очереди: «Летняя коллекция», «Штандарт» (буквы
+        сходятся из широкой разрядки), описание.
+     4. Шапка спускается сверху.
+     ===================================================================== */
+  html.st-intro .sheet-g, html.st-intro .coll-lead { opacity: 0; }
+  .sheet-g { transform-box: view-box; }
+  html.st-in .sheet-g { animation: sheetUp 1.35s cubic-bezier(.22,.8,.2,1) .35s both; }
+  @keyframes sheetUp { from { transform: translate(0, 230px); opacity: 0; } 25% { opacity: 1; } to { transform: translate(0, -210px); opacity: 1; } }
+  html.st-in .coll-lead { animation: leadUp 1.35s cubic-bezier(.22,.8,.2,1) .35s both, fadeIn .9s ease 1.3s both; }
+  @keyframes leadUp { from { transform: translateY(440px); } to { transform: none; } }
+  html.st-in .intro-label { animation: fadeIn .8s ease 1s both; }
+  html.st-in .intro-title { animation: track 1.6s cubic-bezier(.2,.7,.2,1) 1.05s both; }
+  @keyframes track { from { letter-spacing: .32em; opacity: 0; } to { letter-spacing: 0; opacity: 1; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  /* скрыта только до старта анимации — иначе после неё правило снова прячет шапку */
+  html.st-intro:not(.st-in) .hd { opacity: 0; transform: translateY(-14px); }
+  /* backwards, а не both: после появления анимация не держит шапку — иначе
+     она становится «корнем» для размытия и blur под шапкой пропадает */
+  html.st-in .hd { animation: hdIn .9s cubic-bezier(.2,.7,.2,1) .2s backwards; }
+  @keyframes hdIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    html.st-intro .sheet-g, html.st-intro .coll-lead, html.st-intro .hd { opacity: 1; transform: none; }
+    html.st-in * { animation: none !important; }
+  }
+
+  /* Лист поднят ещё на 70px — наложенные HTML-слои едут вместе с ним */
+  .sl, .cards, .play, .coll-lead { translate: 0 -70px; }
+
+  /* --- Кнопка видео в блоке «В кадре» --------------------------------------- */
+  /* Стиль — как у стрелок слайдеров (золотое кольцо и треугольник), плюс
+     тёмное матовое стекло под ним — чтобы золото читалось на любом кадре */
+  .play {
+    position: absolute; z-index: 3; width: 88px; height: 88px; padding: 0; border: 0; cursor: pointer;
+    border-radius: 50%; background: rgba(167,193,210,.75);   /* фоновый голубой #A7C1D2 */
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    transition: transform .5s cubic-bezier(.2,.7,.2,1), background .4s ease;
+  }
+  .play svg { display: block; width: 88px; height: 88px; overflow: visible; }
+  .play:hover { transform: scale(1.08); background: rgba(167,193,210,.92); }
+
+  /* --- Слайдер фарфора ---------------------------------------------------- */
+  .sl2 { position: absolute; z-index: 2; overflow: hidden; background: #fff; }
+  .sl2 .pic { position: absolute; inset: 0; overflow: hidden; background: #fff; }
+  .sl2 .pic img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .sl2c { position: absolute; z-index: 2; width: 200px; height: 50px; display: flex; align-items: center; justify-content: space-between; }
+  .sl2c__b { width: 50px; height: 50px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .sl2c__b svg { display: block; width: 50px; height: 50px; overflow: visible; }
+  .sl2c__b:hover circle { stroke-opacity: .8; }
+  /* Стрелки слайдера «Образ»: контур ровно 1px при любом масштабе.
+     На наведении круг наливается светом, стрелка темнеет и делает шаг. */
+  .sl__btn svg { display: block; width: 50px; height: 50px; overflow: visible; }
+  .sl__btn circle { transition: stroke-opacity .35s, fill .35s; fill: rgba(216,198,155,0); }
+  .sl__btn path   { transition: fill .35s, translate .45s cubic-bezier(.2,.7,.2,1); }
+  .sl__btn:hover circle, .sl__btn:focus-visible circle { stroke-opacity: 1; fill: rgba(216,198,155,.16); }
+  .sl__btn:hover path,   .sl__btn:focus-visible path   { fill: #A8905F; }
+  .sl__btn--prev:hover path { translate: -3px 0; }
+  .sl__btn--next:hover path { translate:  3px 0; }
+  .sl__btn:active svg { scale: .94; }
+  .sl2c__n { margin: 0; font-family: 'Manrope', sans-serif; font-weight: 500; font-size: 16px; line-height: 22px; color: #676767; }
+
+  /* --- Карточки изделий: ховер ------------------------------------------
+     Снизу выезжает плашка с названием. */
+  .card { position: absolute; z-index: 2; display: block; overflow: hidden; text-decoration: none;
+          }
+  .card__cap {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 34px 14px 20px; text-align: center;
+    font-family: 'Manrope', sans-serif; font-weight: 400; font-size: 15px; line-height: 20px;
+    color: #4D4C4B; -webkit-font-smoothing: antialiased;
+    background: linear-gradient(to top, #fff 55%, rgba(255,255,255,0));
+    transform: translateY(100%); opacity: 0;
+    transition: transform .55s cubic-bezier(.2,.7,.2,1), opacity .45s ease;
+  }
+  .card:hover .card__cap, .card:focus-visible .card__cap { transform: none; opacity: 1; }
+
+  /* --- Слайдер «образ» ----------------------------------------------------
+     Листается только центральное фото: само каждые 5 с, стрелками — вручную,
+     на наведении — пауза. Бока статичны. Координаты — макета, с учётом
+     подъёма листа на 140px. */
+  .sl { position: absolute; left: 0; top: 0; width: 1920px; height: 0; }
+  .sl__frame { position: absolute; overflow: hidden; background: #f3f0eb; }
+  .sl__frame img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: opacity 1.1s ease, transform 1.6s cubic-bezier(.2,.7,.2,1);
+  }
+  .sl__frame img.out { opacity: 0; transform: scale(1.04); }
+  .sl__pic { position: absolute; inset: 0; overflow: hidden; }
+  .sl__pic img { transition: none; }
+  .sl__roll { display: inline-block; position: relative; overflow: hidden; height: 22px; vertical-align: top; color: #A8905F; }
+  .sl__roll span { display: block; }
+  .sl__c { left: 661px; top: 1048px; width: 599px; height: 798px; }
+  .sl__l { left: 134px; top: 1249px; width: 264px; height: 396px; }
+  .sl__r { left: 1518px; top: 1249px; width: 264px; height: 396px; }
+  .sl__cap {
+    position: absolute; margin: 0;
+    font-family: 'Libre Baskerville', 'Noto Sans', sans-serif; font-size: 12px; line-height: 15px;
+    text-transform: uppercase; color: #4D4C4B; -webkit-font-smoothing: antialiased;
+    transition: opacity .6s ease;
+  }
+  .sl__cap.fade { opacity: 0; }
+  .sl__cap--c { left: 660px; width: 600px; top: 1003px; text-align: center; }
+  .sl__cap--l { left: 134px; width: 264px; top: 1202px; text-align: right; }
+  .sl__cap--r { left: 1518px; width: 264px; top: 1202px; text-align: left; }
+  .sl__cnt {
+    position: absolute; left: 860px; width: 200px; top: 1872px; margin: 0; text-align: center;
+    font-family: 'Manrope', sans-serif; font-weight: 500; font-size: 16px; line-height: 22px; color: #676767;
+  }
+  .sl__btn {
+    position: absolute; top: 1422px; width: 50px; height: 50px; border-radius: 50%;
+    border: 0; padding: 0; background: transparent; cursor: pointer;
+  }
+  .sl__btn--prev { left: 516px; }
+  .sl__btn--next { left: 1358px; }
+
+  /* Правка: описание под названием — как цитата на главной
+     (Spectral Light Italic, #617F95), по центру листа */
+  .coll-lead {
+    position: absolute; left: 557px; top: 858px; width: 800px; margin: 0;
+    font-family: 'Spectral', serif; font-style: italic; font-weight: 300;
+    font-size: 22px; line-height: 26px; text-align: center; color: #617F95;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Шапка как на главной -------------------------------------------- */
+  .hd { position: fixed; left: 0; top: 0; width: 1920px; height: 90px; z-index: 10; pointer-events: none; }
+  .hd a { pointer-events: auto; text-decoration: none; }
+  .hd__veil {
+    /* Правка: высота 90 — сразу под логотипом (он кончается на 85px), край чёткий */
+    position: absolute; left: 0; top: 0; width: 1920px; height: 90px;
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    background: rgba(225,221,214,.25);
+    opacity: var(--veil, 0);
+  }
+  .hd__logo { position: absolute; left: 44px; top: 15px; width: 55px; height: 70px; }
+  .hd__logo .bird { display: block; width: 100%; height: 100%; overflow: visible; }
+  /* Взмах крыльев при наведении: два мягких взмаха, второй слабее.
+     Каждое крыло поворачивается вокруг своего «плеча». */
+  .wing { transform-box: view-box; }
+  .wing--l { transform-origin: 188px 150px; }
+  .wing--r { transform-origin: 262px 132px; }
+  .hd__logo:hover .wing--l { animation: flapL 1.1s cubic-bezier(.45,0,.35,1); }
+  .hd__logo:hover .wing--r { animation: flapR 1.1s cubic-bezier(.45,0,.35,1); }
+  @keyframes flapL { 0% { rotate: 0deg; } 22% { rotate: 11deg; } 45% { rotate: -4deg; } 68% { rotate: 6deg; } 100% { rotate: 0deg; } }
+  @keyframes flapR { 0% { rotate: 0deg; } 22% { rotate: -11deg; } 45% { rotate: 4deg; } 68% { rotate: -6deg; } 100% { rotate: 0deg; } }
+  @media (prefers-reduced-motion: reduce) { .hd__logo:hover .wing { animation: none; } }
+  .hd__nav { position: absolute; left: 157px; top: 30px; display: flex; align-items: center; gap: 30px; }
+  /* Правка: высота 40 — как у кругов «кабинет» и «корзина» */
+  .hd__menu { display: flex; align-items: center; gap: 10px; box-sizing: border-box; height: 40px; padding: 0 12px; border: 1px solid rgba(71,52,45,.71); }
+  .hd__lines { position: relative; width: 24px; height: 5px; }
+  .hd__lines img { position: absolute; left: 0; top: -2px; width: 24px; height: 7px; }
+  .hd__nav, .hd__nav a {
+    font-family: 'Manrope', sans-serif; font-weight: 500;
+    font-size: 12px; line-height: 15px; text-transform: uppercase; white-space: nowrap;
+    color: #47342d; -webkit-font-smoothing: antialiased;
+  }
+  .hd__items { display: flex; align-items: center; gap: 20px; }
+  .hd__ico { position: absolute; top: 30px; width: 40px; height: 40px; }
+  .hd__ring { position: absolute; inset: 0; width: 40px; height: 40px; }
+  .hd__in { position: absolute; }
+  .hd__in img { position: absolute; display: block; }
+  .hd__in--user { left: 13.8px; top: 11px; width: 12.4px; height: 15.5px; }
+  .hd__in--user img { left: -0.5px; top: -0.5px; width: 13.4px; height: 16.236px; }
+  .hd__in--bag  { left: 12px; top: 10px; width: 16.757px; height: 18px; }
+  .hd__in--bag img { left: -0.379px; top: -0.5px; width: 17.51px; height: 19px; }
+
+  /* ===== Адаптация (см. скрипт в <head>): вся страница масштабируется
+     пропорционально ширине, мелкий текст получает поправку --tb ====== */
+  html, body { overflow-x: hidden; }
+  .wrap { scale: var(--sk, 1); transform-origin: 0 0; }
+  .hd { scale: var(--sk, 1); transform-origin: 0 0; }
+  .hd__nav, .hd__nav a { font-size: calc(12px * var(--tb, 1)); line-height: calc(15px * var(--tb, 1)); }
+  .sl__cap  { font-size: calc(12px * var(--k12, 1)); line-height: calc(15px * var(--k12, 1)); }
+  .card__cap { font-size: calc(15px * var(--kc, 1)); line-height: calc(20px * var(--kc, 1)); }
+  .sl__cnt  { font-size: calc(16px * var(--kn, 1)); line-height: calc(22px * var(--kn, 1)); }
+  /* Текст внутри картинки страницы масштабируем вокруг центра строки —
+     выключка по центру и положение блоков при этом сохраняются */
+  .page text[font-size="12"], .page text[font-size="14"], .page text[font-size="16"] {
+    transform-box: fill-box; transform-origin: center;
+  }
+  /* Кнопки «Смотреть…»: рамка растёт вместе с надписью, поля сохраняются */
+  .btn rect { transform-box: fill-box; transform-origin: center; scale: var(--kl, 1); }
+  .page text[font-size="12"] { scale: var(--k12, 1); }
+  .page text[font-size="14"] { scale: var(--kl, 1); }
+  .page text[font-size="16"] { scale: var(--kt, 1); }
+
+  /* ===== Шапка на экранах уже 1920 — чуть крупнее (--hb) ================ */
+  .hd__logo { transform-origin: 0 0; scale: var(--hb, 1); top: var(--logotop, 15px); }
+  .hd__nav  { transform-origin: 0 50%; scale: var(--hb, 1); translate: 0 calc(-1 * var(--hshift, 0px)); }
+  .hd__nav, .hd__nav a { font-size: 12px; line-height: 15px; }
+  .hd__ico { transform-origin: 100% 50%; scale: var(--hb, 1); translate: 0 calc(-1 * var(--hshift, 0px)); }
+  .hd__ico[style*="left:1788px"] { translate: calc(-1 * (var(--hb, 1) - 1) * 40px) calc(-1 * var(--hshift, 0px)); }
+  .hd__veil { height: var(--band, 90px); }
+  .hd { height: var(--band, 90px); }
+</style>
+<script>
+/* ===== Адаптация под ширину экрана =====================================
+   Макет собран в координатах 1920. На экранах уже 1920 (например, 1440)
+   всё пропорционально масштабируется: --sk = ширина / 1920.
+   --dh — высота экрана в координатах макета (первый экран заполняет её
+   целиком), --tb — поправка для мелкого текста, чтобы он не мельчал. */
+(() => {
+  const r = document.documentElement;
+  const BAND = 90;   // высота полосы шапки в макете
+  const fit = () => {
+    const vw = r.clientWidth || innerWidth;                  // ширина без полосы прокрутки
+    const sk = Math.min(1, vw / 1920), dh = innerHeight / sk;
+    window.SK = sk; window.DH = dh;
+    r.style.setProperty('--sk', sk);
+    r.style.setProperty('--dh', dh + 'px');
+    r.style.setProperty('--dy', Math.max(0, dh - 885) + 'px');
+    // Шапка держит свой размер: текст меню на экране всегда 12px, до 1280
+    // включительно. --hb компенсирует общее уменьшение страницы.
+    r.style.setProperty('--hb', Math.max(1, Math.min(1.5, 1 / sk)).toFixed(3));
+    // ...но поля сверху и снизу на узких экранах поджимаются, иначе шапка
+    // выглядит тяжёлой рядом с уменьшенным контентом. Значения — в пикселях
+    // экрана, в координаты макета переводим делением на масштаб.
+    const t = Math.min(.35, 1 - sk);                    // насколько экран уже 1920
+    r.style.setProperty('--logotop', (15 - 28 * t) / sk + 'px');   // отступ логотипа сверху: 15 → 8 на 1440
+    r.style.setProperty('--hshift',  (14 * t) / sk + 'px');        // меню и иконки подтягиваются вверх
+    r.style.setProperty('--band',    (90 - 28 * t) / sk + 'px'); // высота полосы шапки
+    r.style.setProperty('--tb', Math.min(1.25, Math.pow(1 / sk, .5)).toFixed(3));
+    // Размеры текста на экране: на 1920 — как в макете, на 1440 подписи 12,
+    // основной текст 14. Между ними плавно. k — во сколько раз увеличить набор
+    // в координатах макета, чтобы после общего уменьшения вышло нужное.
+    const e = Math.min(1, (1 - sk) / .25);
+    const k = (d, target) => ((d + (target - d) * e) / (d * sk)).toFixed(4);
+    r.style.setProperty('--k12', k(12, 12));   // мелкие подписи
+    r.style.setProperty('--kl',  k(14, 14));   // подписи разделов
+    r.style.setProperty('--kt',  k(16, 14));   // основной текст
+    r.style.setProperty('--kc',  k(15, 14));   // названия на карточках
+    r.style.setProperty('--kn',  k(16, 14));   // счётчик слайдера
+  };
+  fit(); addEventListener('resize', fit);
+  // когда страница построена, может появиться полоса прокрутки — пересчитываем
+  const recheck = () => { const old = window.SK; fit(); if (window.SK !== old) dispatchEvent(new Event('resize')); };
+  addEventListener('DOMContentLoaded', recheck); addEventListener('load', recheck);
+})();
+</script>
+</head>
+<body>
+
+<!-- Шапка — та же, что на главной во втором состоянии (тёмная), закреплена -->
+<header class="hd">
+  <div class="hd__veil" aria-hidden="true"></div>
+  <a class="hd__logo" href="figma-01.html" aria-label="На главную"><svg class="bird" viewBox="0 0 489 495" preserveAspectRatio="none" role="img" aria-label="Russkaya Skazka">
+    <defs>
+      <clipPath id="bBody" clipPathUnits="userSpaceOnUse"><path clip-rule="evenodd" d="M0 0H489V495H0Z M20 214 L55 170 L95 118 L135 88 L166 82 L174 104 L176 150 L170 190 L150 204 L110 208 L60 216 Z M270 106 L300 98 L360 92 L400 84 L448 74 L446 122 L420 142 L380 164 L330 176 L292 170 L272 150 Z"/></clipPath>
+      <clipPath id="bWL" clipPathUnits="userSpaceOnUse"><path d="M20 214 L55 170 L95 118 L135 88 L168 80 L190 96 L206 140 L200 190 L160 206 L110 208 L60 216 Z"/></clipPath>
+      <clipPath id="bWR" clipPathUnits="userSpaceOnUse"><path d="M248 108 L300 98 L360 92 L400 84 L448 74 L446 122 L420 142 L380 164 L330 176 L286 174 L246 150 Z"/></clipPath>
+    </defs>
+    <image href="figma-02/2f034.png" width="489" height="495" preserveAspectRatio="none" clip-path="url(#bBody)"/>
+    <g class="wing wing--l"><image href="figma-02/2f034.png" width="489" height="495" preserveAspectRatio="none" clip-path="url(#bWL)"/></g>
+    <g class="wing wing--r"><image href="figma-02/2f034.png" width="489" height="495" preserveAspectRatio="none" clip-path="url(#bWR)"/></g>
+  </svg></a>
+  <nav class="hd__nav">
+    <a class="hd__menu" href="#"><span class="hd__lines"><img src="figma-02/94c36.svg" alt=""></span><span>меню</span></a>
+    <span class="hd__items"><a href="#">новинки</a><a href="figma-01.html">коллекции</a><a href="#">Одежда и аксессуары</a></span>
+  </nav>
+  <a class="hd__ico" style="left:1788px" href="#" aria-label="Кабинет"><svg class="hd__ring" viewBox="0 0 40 40" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"><circle cx="20" cy="20" r="19.5" fill="none" stroke="#47342D" stroke-opacity=".75" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><span class="hd__in hd__in--user"><img src="figma-02/08920.svg" alt=""></span></a>
+  <a class="hd__ico" style="left:1836px" href="#" aria-label="Корзина"><svg class="hd__ring" viewBox="0 0 40 40" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"><circle cx="20" cy="20" r="19.5" fill="none" stroke="#47342D" stroke-opacity=".75" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><span class="hd__in hd__in--bag"><img src="figma-02/9d82c.svg" alt=""></span></a>
+</header>
+<div class="wrap">
+<!-- Блок «В кадре»: здесь будет видео, пока — кнопка запуска по центру -->
+<button class="play" type="button" aria-label="Смотреть видео" style="left:913px;top:4045px">
+  <svg viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r="24.4" fill="none" stroke="#617F95" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M20.5 33V17L33 25L20.5 33Z" fill="#617F95"/></svg>
+</button>
+<!-- Карточки изделий: на наведении снизу выезжает название -->
+<div class="cards">
+<a class="card" href="#" style="left:134px;top:4630px;width:298px;height:398px"><span class="card__cap">Брошь «Афродита»</span></a>
+<a class="card" href="#" style="left:470px;top:4630px;width:298px;height:398px"><span class="card__cap">Серьги «Якоря»</span></a>
+<a class="card" href="#" style="left:806px;top:4630px;width:298px;height:398px"><span class="card__cap">Брошь «Цесаревич»</span></a>
+<a class="card" href="#" style="left:1142px;top:4630px;width:298px;height:398px"><span class="card__cap">Серьги «Лягушки»</span></a>
+<a class="card" href="#" style="left:1478px;top:4630px;width:298px;height:398px"><span class="card__cap">Брошь «Афродита»</span></a>
+<a class="card" href="#" style="left:134px;top:5077px;width:298px;height:398px"><span class="card__cap">Браслет «Якорь»</span></a>
+<a class="card" href="#" style="left:470px;top:5077px;width:298px;height:398px"><span class="card__cap">Брошь «Ландыш»</span></a>
+<a class="card" href="#" style="left:806px;top:5077px;width:298px;height:398px"><span class="card__cap">Браслет «Якорь»</span></a>
+<a class="card" href="#" style="left:1142px;top:5077px;width:298px;height:398px"><span class="card__cap">Серьги «Якоря»</span></a>
+<a class="card" href="#" style="left:1478px;top:5077px;width:298px;height:398px"><span class="card__cap">Подвеска с жемчугом</span></a>
+<a class="card" href="#" style="left:133px;top:6018px;width:299px;height:398px"><span class="card__cap">Чайник «Штандарт»</span></a>
+<a class="card" href="#" style="left:470px;top:6018px;width:299px;height:398px"><span class="card__cap">Сервиз «Штандарт»</span></a>
+<a class="card" href="#" style="left:807px;top:6018px;width:300px;height:398px"><span class="card__cap">Чайная пара «Штандарт»</span></a>
+<a class="card" href="#" style="left:1145px;top:6018px;width:300px;height:398px"><span class="card__cap">Сахарница «Штандарт»</span></a>
+<a class="card" href="#" style="left:1483px;top:6018px;width:299px;height:398px"><span class="card__cap">Чайник «Штандарт»</span></a>
+</div>
+<div class="sl" aria-roledescription="carousel">
+  <p class="sl__cap sl__cap--c"></p><p class="sl__cap sl__cap--l"></p><p class="sl__cap sl__cap--r"></p>
+  <div class="sl__frame sl__c"></div><div class="sl__frame sl__l"></div><div class="sl__frame sl__r"></div>
+  <p class="sl__cnt"></p>
+  <button class="sl__btn sl__btn--prev" type="button" aria-label="Предыдущий кадр"><svg viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r="24.5" fill="none" stroke="#D8C69B" stroke-opacity=".75" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="M28 31V19L20 25L28 31Z" fill="#D8C69B"/></svg></button>
+  <button class="sl__btn sl__btn--next" type="button" aria-label="Следующий кадр"><svg viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r="24.5" fill="none" stroke="#D8C69B" stroke-opacity=".75" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="M22 31V19L30 25L22 31Z" fill="#D8C69B"/></svg></button>
+</div>
+<p class="coll-lead">Летняя коллекция нашей домашней линии вдохновлена морскими прогулками императорской семьи Николая II на яхте «Штандарт» — символе утончённого вкуса, статуса и безупречной эстетики. Образ императорской яхты, где соединялись парадность и камерный уют, лёг в основу коллекции.</p>
+<svg class="page" width="1920" height="6837" viewBox="0 0 1920 6837" role="img" aria-label="Коллекция «Штандарт»" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g clip-path="url(#clip0_1851_63)">
+<rect width="1920" height="6837" fill="#A7C1D2"/>
+<image class="hero-ph" x="0" y="-520" width="1920" height="1796" preserveAspectRatio="xMidYMid slice" xlink:href="standart/img/hero-new.jpg"/>
+<rect y="1249" width="1920" height="7135" fill="#A7C1D2"/>
+<g class="sheet-g" transform="translate(0,-210)">
+<rect x="134" y="778" width="1646" height="6199" fill="white"/>
+<rect x="134" y="4613" width="1646" height="2364" fill="#FAF7F3"/>
+<text class="coll-title intro-title" fill="#89A5B5" style="white-space: pre" xml:space="preserve" font-family="Forum" font-size="120" text-anchor="middle"><tspan x="957" y="961.5">&#x428;&#x422;&#x410;&#x41d;&#x414;&#x410;&#x420;&#x422;</tspan></text>
+<text class="intro-label" fill="#4D4C4B" style="white-space: pre" xml:space="preserve" font-family="Libre Baskerville" font-size="14" font-weight="500" letter-spacing="0em"><tspan x="887.039" y="841.4">&#x41b;&#x415;&#x422;&#x41d;&#x42f;&#x42f; &#x41a;&#x41e;&#x41b;&#x41b;&#x415;&#x41a;&#x426;&#x418;&#x42f;</tspan></text>
+<text fill="#444444" style="white-space: pre" xml:space="preserve" font-family="Manrope" font-size="16" letter-spacing="0em"><tspan x="296" y="3505.13">&#x41a;&#x43e;&#x43b;&#x43b;&#x435;&#x43a;&#x446;&#x438;&#x44f; &#x43e;&#x431;&#x44a;&#x435;&#x434;&#x438;&#x43d;&#x44f;&#x435;&#x442; &#x43c;&#x43e;&#x440;&#x441;&#x43a;&#x443;&#x44e; &#x441;&#x432;&#x435;&#x436;&#x435;&#x441;&#x442;&#x44c; &#x438; </tspan><tspan x="296" y="3527.13">&#x438;&#x437;&#x44b;&#x441;&#x43a;&#x430;&#x43d;&#x43d;&#x43e;&#x441;&#x442;&#x44c; &#x438;&#x43c;&#x43f;&#x435;&#x440;&#x430;&#x442;&#x43e;&#x440;&#x441;&#x43a;&#x43e;&#x433;&#x43e; &#x441;&#x442;&#x438;&#x43b;&#x44f;, &#x441;&#x43e;&#x437;&#x434;&#x430;&#x432;&#x430;&#x44f; </tspan><tspan x="296" y="3549.13">&#x432;&#x44b;&#x440;&#x430;&#x437;&#x438;&#x442;&#x435;&#x43b;&#x44c;&#x43d;&#x44b;&#x439; &#x438; &#x443;&#x437;&#x43d;&#x430;&#x432;&#x430;&#x435;&#x43c;&#x44b;&#x439; &#x43e;&#x431;&#x440;&#x430;&#x437;. &#x42d;&#x442;&#x43e; &#x43d;&#x435; &#x43f;&#x440;&#x43e;&#x441;&#x442;&#x43e; </tspan><tspan x="296" y="3571.13">&#x441;&#x435;&#x440;&#x432;&#x438;&#x437;, &#x430; &#x43f;&#x440;&#x435;&#x434;&#x43c;&#x435;&#x442; &#x441; &#x445;&#x430;&#x440;&#x430;&#x43a;&#x442;&#x435;&#x440;&#x43e;&#x43c; &#x438; &#x438;&#x441;&#x442;&#x43e;&#x440;&#x438;&#x435;&#x439;, &#x43a;&#x43e;&#x442;&#x43e;&#x440;&#x44b;&#x439; </tspan><tspan x="296" y="3593.13">&#x441;&#x442;&#x430;&#x43d;&#x43e;&#x432;&#x438;&#x442;&#x441;&#x44f; &#x430;&#x43a;&#x446;&#x435;&#x43d;&#x442;&#x43e;&#x43c; &#x441;&#x435;&#x440;&#x432;&#x438;&#x440;&#x43e;&#x432;&#x43a;&#x438; &#x438; &#x444;&#x43e;&#x440;&#x43c;&#x438;&#x440;&#x443;&#x435;&#x442; </tspan><tspan x="296" y="3615.13">&#x430;&#x442;&#x43c;&#x43e;&#x441;&#x444;&#x435;&#x440;&#x443;.</tspan></text>
+<!-- Чашка (525) и чайник (732) выровнены по верхнему краю и плывут вместе (параллакс одной группой) -->
+<g class="px" data-k="0.08"><rect x="134" y="2547" width="525" height="702" fill="url(#pattern4_1851_63)"/><rect x="1048" y="2547" width="732" height="978" fill="url(#pattern5_1851_63)"/></g>
+
+<!-- Блок под видео: подпись над ним -->
+<text class="in-frame" fill="#4D4C4B" font-family="Manrope" font-size="14" font-weight="500" letter-spacing="0.04em" text-anchor="middle"><tspan x="957" y="3815">В КАДРЕ</tspan></text>
+<rect x="134" y="3845" width="1646" height="768" fill="url(#pattern6_1851_63)"/>
+<text fill="#4D4C4B" style="white-space: pre" xml:space="preserve" font-family="Libre Baskerville" font-size="14" font-weight="500" letter-spacing="0em"><tspan x="818.606" y="4726.4">&#x41a;&#x41e;&#x41b;&#x41b;&#x415;&#x41a;&#x426;&#x418;&#x42f; &#x42e;&#x412;&#x415;&#x41b;&#x418;&#x420;&#x41d;&#x42b;&#x425; &#x423;&#x41a;&#x420;&#x410;&#x428;&#x415;&#x41d;&#x418;&#x419;</tspan></text>
+<rect x="134" y="4770" width="298" height="398" fill="url(#pattern7_1851_63)"/>
+<rect x="470" y="4770" width="298" height="398" fill="url(#pattern8_1851_63)"/>
+<rect x="806" y="4770" width="298" height="398" fill="url(#pattern9_1851_63)"/>
+<rect x="1142" y="4770" width="298" height="399" fill="url(#pattern10_1851_63)"/>
+<rect x="1478" y="4770" width="298" height="398" fill="url(#pattern11_1851_63)"/>
+<rect x="134" y="5217" width="298" height="398" fill="url(#pattern12_1851_63)"/>
+<rect x="470" y="5217" width="298" height="400" fill="url(#pattern13_1851_63)"/>
+<rect x="806" y="5217" width="298" height="398" fill="url(#pattern14_1851_63)"/>
+<rect x="1142" y="5217" width="298" height="398" fill="url(#pattern15_1851_63)"/>
+<rect x="1478" y="5217" width="298" height="398" fill="url(#pattern16_1851_63)"/>
+<!-- Кнопка: рамка и надпись растут вместе -->
+<g class="btn"><rect x="853" y="5657.5" width="208" height="39" stroke="#47342D" stroke-opacity="0.4"/><text fill="#47342D" style="white-space: pre" xml:space="preserve" font-family="Libre Baskerville" font-size="14" font-weight="500" letter-spacing="0em"><tspan x="869.5" y="5681.9">&#x421;&#x41c;&#x41e;&#x422;&#x420;&#x415;&#x422;&#x42c; &#x412;&#x421;&#x415; &#x418;&#x417;&#x414;&#x415;&#x41b;&#x418;&#x42f;</tspan></text></g>
+<!-- Вместо птички — эмблема с фарфора: якорь с трезубцами -->
+<image class="ship" x="887" y="5754.5" width="140" height="118" href="standart/img/anchor2.png"/>
+<text fill="#444444" style="white-space: pre" xml:space="preserve" font-family="Manrope" font-size="16" letter-spacing="0em"><tspan x="703.977" y="5930.13">&#x41b;&#x435;&#x442;&#x43d;&#x44f;&#x44f; &#x43a;&#x43e;&#x43b;&#x43b;&#x435;&#x43a;&#x446;&#x438;&#x44f; &#x43d;&#x430;&#x448;&#x435;&#x439; &#x434;&#x43e;&#x43c;&#x430;&#x448;&#x43d;&#x435;&#x439; &#x43b;&#x438;&#x43d;&#x438;&#x438; &#x432;&#x434;&#x43e;&#x445;&#x43d;&#x43e;&#x432;&#x43b;&#x435;&#x43d;&#x430; &#x43c;&#x43e;&#x440;&#x441;&#x43a;&#x438;&#x43c;&#x438; </tspan><tspan x="666.586" y="5952.13">&#x43f;&#x440;&#x43e;&#x433;&#x443;&#x43b;&#x43a;&#x430;&#x43c;&#x438; &#x438;&#x43c;&#x43f;&#x435;&#x440;&#x430;&#x442;&#x43e;&#x440;&#x441;&#x43a;&#x43e;&#x439; &#x441;&#x435;&#x43c;&#x44c;&#x438; &#x41d;&#x438;&#x43a;&#x43e;&#x43b;&#x430;&#x44f; II &#x43d;&#x430; &#x44f;&#x445;&#x442;&#x435; &#xab;&#x428;&#x442;&#x430;&#x43d;&#x434;&#x430;&#x440;&#x442;&#xbb; &#x2014; &#x441;&#x438;&#x43c;&#x432;&#x43e;&#x43b;&#x435; </tspan><tspan x="669.477" y="5974.13">&#x443;&#x442;&#x43e;&#x43d;&#x447;&#x451;&#x43d;&#x43d;&#x43e;&#x433;&#x43e; &#x432;&#x43a;&#x443;&#x441;&#x430;, &#x441;&#x442;&#x430;&#x442;&#x443;&#x441;&#x430; &#x438; &#x431;&#x435;&#x437;&#x443;&#x43f;&#x440;&#x435;&#x447;&#x43d;&#x43e;&#x439; &#x44d;&#x441;&#x442;&#x435;&#x442;&#x438;&#x43a;&#x438;. &#x41e;&#x431;&#x440;&#x430;&#x437; &#x438;&#x43c;&#x43f;&#x435;&#x440;&#x430;&#x442;&#x43e;&#x440;&#x441;&#x43a;&#x43e;&#x439; </tspan><tspan x="669.062" y="5996.13">&#x44f;&#x445;&#x442;&#x44b;, &#x433;&#x434;&#x435; &#x441;&#x43e;&#x435;&#x434;&#x438;&#x43d;&#x44f;&#x43b;&#x438;&#x441;&#x44c; &#x43f;&#x430;&#x440;&#x430;&#x434;&#x43d;&#x43e;&#x441;&#x442;&#x44c; &#x438; &#x43a;&#x430;&#x43c;&#x435;&#x440;&#x43d;&#x44b;&#x439; &#x443;&#x44e;&#x442;, &#x43b;&#x451;&#x433; &#x432; &#x43e;&#x441;&#x43d;&#x43e;&#x432;&#x443; &#x43a;&#x43e;&#x43b;&#x43b;&#x435;&#x43a;&#x446;&#x438;&#x438;</tspan></text>
+<text fill="#4D4C4B" style="white-space: pre" xml:space="preserve" font-family="Libre Baskerville" font-size="14" font-weight="500" letter-spacing="0em"><tspan x="839.579" y="6114.4">&#x41a;&#x41e;&#x41b;&#x41b;&#x415;&#x41a;&#x426;&#x418;&#x42f; &#x414;&#x41e;&#x41c;&#x410;&#x428;&#x41d;&#x415;&#x419; &#x41b;&#x418;&#x41d;&#x418;&#x418;</tspan></text>
+<rect x="133" y="6158" width="299" height="398" fill="white"/>
+<rect x="133" y="6158" width="299" height="398" fill="url(#pattern18_1851_63)"/>
+<rect x="470" y="6158" width="299" height="399" fill="white"/>
+<rect x="470" y="6158" width="299" height="399" fill="url(#pattern19_1851_63)"/>
+<rect x="807" y="6158" width="300" height="398" fill="url(#pattern20_1851_63)"/>
+<rect x="1145" y="6158" width="300" height="399" fill="white"/>
+<rect x="1145" y="6158" width="300" height="399" fill="url(#pattern21_1851_63)"/>
+<rect x="1483" y="6158" width="299" height="398" fill="white"/>
+<rect x="1483" y="6158" width="299" height="398" fill="url(#pattern22_1851_63)"/>
+<!-- Кнопка: рамка и надпись растут вместе -->
+<g class="btn"><rect x="855.5" y="6597.5" width="203" height="39" stroke="#47342D" stroke-opacity="0.4"/><text fill="#47342D" style="white-space: pre" xml:space="preserve" font-family="Libre Baskerville" font-size="14" font-weight="500" letter-spacing="0em"><tspan x="872" y="6621.9">&#x421;&#x41c;&#x41e;&#x422;&#x420;&#x415;&#x422;&#x42c; &#x41a;&#x41e;&#x41b;&#x41b;&#x415;&#x41a;&#x426;&#x418;&#x42e;</tspan></text></g>
+<text class="coll-title" fill="#E7D5A9" style="white-space: pre" xml:space="preserve" font-family="Forum" font-size="202" letter-spacing="0" text-anchor="middle"><tspan x="957" y="6977.25">&#x420;&#x423;&#x421;&#x421;&#x41a;&#x410;&#x42f; &#x421;&#x41a;&#x410;&#x417;&#x41a;&#x410;</tspan></text>
+<text fill="#4D4C4B" style="white-space: pre" xml:space="preserve" font-family="Manrope" font-size="12" font-weight="500" letter-spacing="0.04em" text-anchor="middle"><tspan x="957" y="2146.7">ИМПЕРАТОРСКАЯ ЯХТА · 1896</tspan></text>
+<text class="coll-title" fill="#4D4C4B" style="white-space: pre" xml:space="preserve" font-family="Forum" font-size="40" letter-spacing="0.02em" text-anchor="middle"><tspan x="957" y="2208">&#x418;&#x421;&#x422;&#x41e;&#x420;&#x418;&#x42f; &#x428;&#x422;&#x410;&#x41d;&#x414;&#x410;&#x420;&#x422;&#x410;</tspan></text>
+<!-- Корабли по бокам «Истории» — иллюстрации из макета, уменьшены на 20%,
+     прижаты к краям листа (134 и 1780), обрезаны краем листа как в макете -->
+<image class="ship" x="134" y="2021" width="387" height="442" href="standart/img/ship-left.png"/>
+<image class="ship" x="1571" y="2021" width="209" height="442" href="standart/img/ship-right.png"/>
+<text fill="#444444" style="white-space: pre" xml:space="preserve" font-family="Manrope" font-size="16" letter-spacing="0em"><tspan x="627.906" y="2266.13">&#x412;&#x434;&#x43e;&#x445;&#x43d;&#x43e;&#x432;&#x435;&#x43d;&#x438;&#x435;&#x43c; &#x434;&#x43b;&#x44f; &#x43d;&#x435;&#x451; &#x441;&#x442;&#x430;&#x43b;&#x438; &#x43c;&#x43e;&#x440;&#x441;&#x43a;&#x438;&#x435; &#x43f;&#x440;&#x43e;&#x433;&#x443;&#x43b;&#x43a;&#x438; &#x441;&#x435;&#x43c;&#x44c;&#x438; &#x41d;&#x438;&#x43a;&#x43e;&#x43b;&#x430;&#x44f; II &#x43d;&#x430; &#x44f;&#x445;&#x442;&#x435; &#xab;&#x428;&#x442;&#x430;&#x43d;&#x434;&#x430;&#x440;&#x442;&#xbb; &#x2014; </tspan><tspan x="724.008" y="2288.13">&#x441;&#x438;&#x43c;&#x432;&#x43e;&#x43b;&#x435; &#x443;&#x442;&#x43e;&#x43d;&#x447;&#x451;&#x43d;&#x43d;&#x43e;&#x433;&#x43e; &#x432;&#x43a;&#x443;&#x441;&#x430;, &#x441;&#x442;&#x430;&#x442;&#x443;&#x441;&#x430; &#x438; &#x431;&#x435;&#x437;&#x443;&#x43f;&#x440;&#x435;&#x447;&#x43d;&#x43e;&#x439; &#x44d;&#x441;&#x442;&#x435;&#x442;&#x438;&#x43a;&#x438;.&#x2028;</tspan><tspan x="959.5" y="2310.13">&#10;</tspan><tspan x="612.414" y="2332.13">&#x412; &#x441;&#x435;&#x43d;&#x442;&#x44f;&#x431;&#x440;&#x435; 1896 &#x433;&#x43e;&#x434;&#x430; &#xab;&#x428;&#x442;&#x430;&#x43d;&#x434;&#x430;&#x440;&#x442;&#xbb; &#x441;&#x442;&#x430;&#x43b; &#x43f;&#x43b;&#x430;&#x432;&#x443;&#x447;&#x435;&#x439; &#x440;&#x435;&#x437;&#x438;&#x434;&#x435;&#x43d;&#x446;&#x438;&#x435;&#x439; &#x420;&#x43e;&#x43c;&#x430;&#x43d;&#x43e;&#x432;&#x44b;&#x445;. &#x415;&#x433;&#x43e; &#x443;&#x437;&#x43d;&#x430;&#x432;&#x430;&#x435;&#x43c;&#x44b;&#x439; </tspan><tspan x="633.25" y="2354.13">&#x43e;&#x431;&#x43b;&#x438;&#x43a; &#x2014; &#x441; &#x43f;&#x43e;&#x437;&#x43e;&#x43b;&#x43e;&#x447;&#x435;&#x43d;&#x43d;&#x44b;&#x43c; &#x434;&#x432;&#x443;&#x433;&#x43b;&#x430;&#x432;&#x44b;&#x43c; &#x43e;&#x440;&#x43b;&#x43e;&#x43c;, &#x447;&#x451;&#x440;&#x43d;&#x44b;&#x43c; &#x43a;&#x43e;&#x440;&#x43f;&#x443;&#x441;&#x43e;&#x43c; &#x438; &#x437;&#x43e;&#x43b;&#x43e;&#x442;&#x44b;&#x43c;&#x438; &#x434;&#x435;&#x442;&#x430;&#x43b;&#x44f;&#x43c;&#x438; &#x2014; </tspan><tspan x="620.359" y="2376.13">&#x43e;&#x442;&#x440;&#x430;&#x436;&#x430;&#x43b; &#x432;&#x435;&#x43b;&#x438;&#x447;&#x438;&#x435; &#x438; &#x442;&#x440;&#x435;&#x43f;&#x435;&#x442;&#x43d;&#x43e;&#x435; &#x43e;&#x442;&#x43d;&#x43e;&#x448;&#x435;&#x43d;&#x438;&#x435; &#x43a; &#x434;&#x435;&#x442;&#x430;&#x43b;&#x44f;&#x43c;. &#x418;&#x43d;&#x442;&#x435;&#x440;&#x44c;&#x435;&#x440;&#x44b; &#x43e;&#x442;&#x43b;&#x438;&#x447;&#x430;&#x43b;&#x438;&#x441;&#x44c; &#x441;&#x434;&#x435;&#x440;&#x436;&#x430;&#x43d;&#x43d;&#x43e;&#x439; </tspan><tspan x="625.297" y="2398.13">&#x438;&#x437;&#x44b;&#x441;&#x43a;&#x430;&#x43d;&#x43d;&#x43e;&#x441;&#x442;&#x44c;&#x44e;: &#x431;&#x43b;&#x430;&#x433;&#x43e;&#x440;&#x43e;&#x434;&#x43d;&#x44b;&#x435; &#x43f;&#x43e;&#x440;&#x43e;&#x434;&#x44b; &#x434;&#x435;&#x440;&#x435;&#x432;&#x430;, &#x442;&#x438;&#x441;&#x43d;&#x451;&#x43d;&#x430;&#x44f; &#x43a;&#x43e;&#x436;&#x430; &#x438; &#x43c;&#x44f;&#x433;&#x43a;&#x438;&#x435; &#x442;&#x43a;&#x430;&#x43d;&#x438; &#x441;&#x43e;&#x437;&#x434;&#x430;&#x432;&#x430;&#x43b;&#x438; </tspan><tspan x="616.477" y="2420.13">&#x430;&#x442;&#x43c;&#x43e;&#x441;&#x444;&#x435;&#x440;&#x443; &#x443;&#x44e;&#x442;&#x430; &#x431;&#x435;&#x437; &#x438;&#x437;&#x43b;&#x438;&#x448;&#x43d;&#x435;&#x439; &#x43f;&#x43e;&#x43c;&#x43f;&#x435;&#x437;&#x43d;&#x43e;&#x441;&#x442;&#x438;. &#x414;&#x430;&#x436;&#x435; &#x43f;&#x43e;&#x445;&#x43e;&#x434;&#x43d;&#x430;&#x44f; &#x446;&#x435;&#x440;&#x43a;&#x43e;&#x432;&#x44c; &#x441; &#x438;&#x43a;&#x43e;&#x43d;&#x43e;&#x439; &#xab;&#x425;&#x43e;&#x436;&#x434;&#x435;&#x43d;&#x438;&#x435; </tspan><tspan x="682.719" y="2442.13">&#x418;&#x438;&#x441;&#x443;&#x441;&#x430; &#x425;&#x440;&#x438;&#x441;&#x442;&#x430; &#x43f;&#x43e; &#x432;&#x43e;&#x434;&#x430;&#x43c;&#xbb; &#x43f;&#x43e;&#x434;&#x447;&#x451;&#x440;&#x43a;&#x438;&#x432;&#x430;&#x43b;&#x430; &#x43e;&#x441;&#x43e;&#x431;&#x44b;&#x439; &#x434;&#x443;&#x445; &#x44d;&#x442;&#x43e;&#x433;&#x43e; &#x43f;&#x440;&#x43e;&#x441;&#x442;&#x440;&#x430;&#x43d;&#x441;&#x442;&#x432;&#x430;.</tspan></text>
+</g>
+</g>
+<defs>
+<pattern id="pattern0_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image0_1851_63" transform="scale(0.00171841 0.00183706)"/>
+</pattern>
+<pattern id="pattern1_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image1_1851_63" transform="matrix(0.0017094 0 0 0.00128312 0 -0.000417711)"/>
+</pattern>
+<pattern id="pattern2_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image2_1851_63" transform="scale(0.00117233 0.000781555)"/>
+</pattern>
+<pattern id="pattern3_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image3_1851_63" transform="scale(0.00117233 0.00078125)"/>
+</pattern>
+<pattern id="pattern4_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image4_1851_63" transform="scale(0.00172414 0.00129032)"/>
+</pattern>
+<pattern id="pattern5_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image5_1851_63" transform="matrix(0.0017163 0 0 0.0012837 -0.00030094 0)"/>
+</pattern>
+<pattern id="pattern6_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image5_1851_63" transform="matrix(0.00171527 0 0 0.00357338 0 -1.22538)"/>
+</pattern>
+<pattern id="pattern7_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image6_1851_63" transform="matrix(0.00159949 0 0 0.0011976 -0.0334284 0)"/>
+</pattern>
+<pattern id="pattern8_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image7_1851_63" transform="matrix(0.00159949 0 0 0.0011976 -0.031829 0)"/>
+</pattern>
+<pattern id="pattern9_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image8_1851_63" transform="matrix(0.00104341 0 0 0.00078125 -0.000838926 0)"/>
+</pattern>
+<pattern id="pattern10_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image9_1851_63" transform="matrix(0.00171857 0 0 0.00128354 -0.00096214 0)"/>
+</pattern>
+<pattern id="pattern11_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image10_1851_63" transform="matrix(0.00159757 0 0 0.00119617 -0.030394 0)"/>
+</pattern>
+<pattern id="pattern12_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image11_1851_63" transform="matrix(0.00159949 0 0 0.0011976 -0.031829 0)"/>
+</pattern>
+<pattern id="pattern13_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image12_1851_63" transform="matrix(0.00160945 0 0 0.00119904 -0.00134389 0)"/>
+</pattern>
+<pattern id="pattern14_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image13_1851_63" transform="matrix(0.00159757 0 0 0.00119617 -0.0319916 0)"/>
+</pattern>
+<pattern id="pattern15_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image14_1851_63" transform="matrix(0.00159566 0 0 0.00119474 -0.031356 0)"/>
+</pattern>
+<pattern id="pattern16_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image15_1851_63" transform="matrix(0.00160256 0 0 0.00119991 0 -0.0015623)"/>
+</pattern>
+<pattern id="pattern17_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image16_1851_63" transform="matrix(0.00438596 0 0 0.00341297 -0.592105 -0.119454)"/>
+</pattern>
+<pattern id="pattern18_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image17_1851_63" transform="matrix(0.00062709 0 0 0.000471106 0.0973235 0.198449)"/>
+</pattern>
+<pattern id="pattern19_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image18_1851_63" transform="matrix(0.000950613 0 0 0.000712364 0.0117826 0.044304)"/>
+</pattern>
+<pattern id="pattern20_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image19_1851_63" transform="matrix(0.00103646 0 0 0.00078125 -0.163333 0)"/>
+</pattern>
+<pattern id="pattern21_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image20_1851_63" transform="matrix(0.000867188 0 0 0.000652021 -0.0548613 0.0827068)"/>
+</pattern>
+<pattern id="pattern22_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image17_1851_63" transform="matrix(0.00062709 0 0 0.000471106 0.0973235 0.198449)"/>
+</pattern>
+<pattern id="pattern23_1851_63" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image21_1851_63" transform="matrix(0.00438596 0 0 0.00341297 -0.592105 -0.119454)"/>
+</pattern>
+<clipPath id="clip0_1851_63">
+<rect width="1920" height="6837" fill="white"/>
+</clipPath>
+<image id="image0_1851_63" width="582" height="775" preserveAspectRatio="none" xlink:href="standart/img/hero-hq.jpg"/>
+<image id="image1_1851_63" width="585" height="780" preserveAspectRatio="none" xlink:href="standart/img/earring-clean.jpg"/>
+<image id="image2_1851_63" width="853" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image2_1851_63.png"/>
+<image id="image3_1851_63" width="853" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image3_1851_63.png"/>
+<image id="image4_1851_63" width="580" height="775" preserveAspectRatio="none" xlink:href="standart/img/cup-clean.jpg"/>
+<image id="image5_1851_63" width="583" height="779" preserveAspectRatio="none" xlink:href="standart/img/teapot-clean.jpg"/>
+<image id="image6_1851_63" width="667" height="835" preserveAspectRatio="none" xlink:href="standart/img/c6.png"/>
+<image id="image7_1851_63" width="665" height="835" preserveAspectRatio="none" xlink:href="standart/img/c7.png"/>
+<image id="image8_1851_63" width="960" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image8_1851_63.png"/>
+<image id="image9_1851_63" width="583" height="783" preserveAspectRatio="none" xlink:href="standart/img/c9.png"/>
+<image id="image10_1851_63" width="664" height="836" preserveAspectRatio="none" xlink:href="standart/img/c10.png"/>
+<image id="image11_1851_63" width="665" height="835" preserveAspectRatio="none" xlink:href="standart/img/c11.png"/>
+<image id="image12_1851_63" width="623" height="834" preserveAspectRatio="none" xlink:href="standart/img/c12.png"/>
+<image id="image13_1851_63" width="666" height="836" preserveAspectRatio="none" xlink:href="standart/img/c13.png"/>
+<image id="image14_1851_63" width="666" height="837" preserveAspectRatio="none" xlink:href="standart/img/c14.png"/>
+<image id="image15_1851_63" width="624" height="836" preserveAspectRatio="none" xlink:href="standart/img/c15.png"/>
+<image id="image16_1851_63" width="489" height="495" preserveAspectRatio="none" xlink:href="standart/img/image16_1851_63.png"/>
+<image id="image17_1851_63" width="1280" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image17_1851_63.png"/>
+<image id="image18_1851_63" width="1023" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image18_1851_63.png"/>
+<image id="image19_1851_63" width="1280" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image19_1851_63.png"/>
+<image id="image20_1851_63" width="1280" height="1280" preserveAspectRatio="none" xlink:href="standart/img/image20_1851_63.png"/>
+<image id="image21_1851_63" width="489" height="495" preserveAspectRatio="none" xlink:href="standart/img/image21_1851_63.png"/>
+</defs>
+</svg>
+</div>
+
+<script>
+  // Размытие под шапкой появляется, как только страница начала прокручиваться
+  const hd = document.querySelector('.hd');
+  const upd = () => hd.style.setProperty('--veil', Math.min(1, scrollY / 90));
+  addEventListener('scroll', upd, { passive: true }); upd();
+
+  // Параллакс: фото обложки едет медленнее страницы (≈ половина скорости),
+  // поэтому белый лист с контентом наплывает на него снизу вверх.
+  // Фото чуть укрупняется по ходу — глубина читается сильнее.
+  const ph = document.querySelector('.hero-ph');
+  let raf = 0;
+  const par = () => {
+    raf = 0;
+    const y = Math.min(scrollY / (window.SK || 1), 1300);   // прокрутка в координатах макета
+    ph.style.transform = `translateY(${y * 0.5}px) scale(${1 + y * 0.00006 + introZoom})`;
+    ph.style.filter = introZoom > .0005 ? `brightness(${1 - introZoom * 1.1})` : '';
+  };
+  ph.style.transformOrigin = '960px 300px';
+  // Появление: фото отъезжает 1.14 → 1 за 2.4 с, затем включается лист (класс st-in)
+  let introZoom = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : .14;
+  const root = document.documentElement;
+  if (introZoom) {
+    const st = performance.now(), D = 2400;
+    const tick = now => {
+      const t = Math.min(1, (now - st) / D);
+      introZoom = .14 * Math.pow(1 - t, 3);
+      par();
+      if (t < 1) requestAnimationFrame(tick); else introZoom = 0;
+    };
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(() => { root.classList.add('st-in'); });
+  setTimeout(() => root.classList.remove('st-intro'), 3200);
+  ph.style.willChange = 'transform';
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(par); }, { passive: true });
+  par();
+</script>
+
+<script>
+/* Слайдер «образ»: листается только центральное фото (3 кадра по кругу).
+   Боковые фото и подписи статичны — как в макете. */
+(() => {
+  const S = [
+    { img: 'standart/img/earring-clean.jpg', pos: '50% 50%' },
+    { img: 'figma-01/standart.png',          pos: '50% 35%' },
+    { img: 'standart/img/hero-new.jpg',      pos: '52% 30%' },
+  ];
+  const N = S.length, STEP = 5000;
+  const q = s => document.querySelector(s);
+  const fc = q('.sl__c'), cnt = q('.sl__cnt');
+  let cur = 0, timer = 0, hover = false;
+
+  // статичные бока и подписи
+  const still = (el, src) => { const im = new Image(); im.src = src; im.alt = ''; el.appendChild(im); };
+  still(q('.sl__l'), 'standart/img/image3_1851_63.png');
+  still(q('.sl__r'), 'standart/img/image2_1851_63.png');
+  q('.sl__cap--c').textContent = 'образ';
+  q('.sl__cap--l').innerHTML = 'на берегу Финского<br>залива';
+  q('.sl__cap--r').innerHTML = 'атмосфера летнего отдыха<br>творческой интеллигенции';
+
+  // Смена кадра — как в правом блоке главной: новый кадр открывается
+  // шторкой поверх старого, старый уходит вглубь (сдвиг, укрупнение, темнее)
+  const EASE = 'cubic-bezier(.77, 0, .18, 1)', SOFT = 'cubic-bezier(.2, .7, .2, 1)';
+  let busy = false;
+  function show(i, instant, dir = 1) {
+    if (busy) return;
+    cur = (i + N) % N;
+    const old = fc.querySelector('.sl__pic');
+    const pic = document.createElement('div'); pic.className = 'sl__pic';
+    const im = new Image(); im.src = S[cur].img; im.alt = ''; im.style.objectPosition = S[cur].pos;
+    pic.appendChild(im); fc.appendChild(pic);
+    if (instant || !old) { roll(cur + 1, 0); schedule(); return; }
+    busy = true;
+    const from = dir > 0 ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)';
+    const a = [
+      pic.animate([{ clipPath: from }, { clipPath: 'inset(0 0 0 0)' }], { duration: 1150, easing: EASE, fill: 'both' }),
+      im.animate([{ transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 1500, easing: SOFT, fill: 'both' }),
+      old.firstChild.animate(
+        [{ transform: 'translateY(0) scale(1)', filter: 'brightness(1)' },
+         { transform: `translateY(${-36 * dir}px) scale(1.06)`, filter: 'brightness(.72)' }],
+        { duration: 1150, easing: EASE, fill: 'both' }),
+    ];
+    roll(cur + 1, dir);
+    a[0].finished.then(() => { old.remove(); busy = false; schedule(); });
+  }
+  // Цифра счётчика перекатывается, как на главной
+  function roll(n, dir) {
+    if (!dir) { cnt.innerHTML = `<span class="sl__roll"><span>${n}</span></span>/${N}`; return; }
+    const box = cnt.querySelector('.sl__roll'), o = box.firstChild;
+    const nu = document.createElement('span'); nu.textContent = n; nu.style.cssText = 'position:absolute;left:0;top:0';
+    box.appendChild(nu);
+    o.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-100 * dir}%)` }], { duration: 700, easing: EASE, fill: 'both' });
+    nu.animate([{ transform: `translateY(${100 * dir}%)` }, { transform: 'translateY(0)' }], { duration: 700, easing: EASE, fill: 'both' })
+      .finished.then(() => { o.remove(); nu.style.cssText = ''; nu.getAnimations().forEach(x => x.cancel()); });
+  }
+  function schedule() {
+    clearTimeout(timer);
+    if (!hover && !document.hidden) timer = setTimeout(() => show(cur + 1), STEP);
+  }
+  q('.sl__btn--next').addEventListener('click', () => show(cur + 1, false, 1));
+  q('.sl__btn--prev').addEventListener('click', () => show(cur - 1, false, -1));
+  for (const el of [fc, q('.sl__btn--next'), q('.sl__btn--prev')]) {
+    el.addEventListener('mouseenter', () => { hover = true; clearTimeout(timer); });
+    el.addEventListener('mouseleave', () => { hover = false; schedule(); });
+  }
+  document.addEventListener('visibilitychange', schedule);
+  show(0, true);
+})();
+</script>
+
+
+<script>
+/* Параллакс фото чашки и чайника: блоки плывут с разной скоростью
+   относительно прокрутки (чашка отстаёт, чайник опережает) */
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const items = [...document.querySelectorAll('.px')].map(g => ({ g, k: +g.dataset.k, r: g.firstElementChild }));
+  let raf = 0;
+  const upd = () => {
+    raf = 0;
+    for (const it of items) {
+      const b = it.r.getBoundingClientRect();
+      const d = (b.top + b.height / 2 - it.shift) - innerHeight / 2;   // смещение центра от центра экрана
+      // только отставание вниз: вверх фото не заезжают, отступ до текста над ними сохраняется
+      it.shift = Math.max(0, Math.min(90, -d * it.k));
+      it.g.style.transform = `translate(0, ${it.shift / (window.SK || 1)}px)`;   // сдвиг в экранных px → в координатах макета
+    }
+  };
+  items.forEach(it => it.shift = 0);
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive: true });
+  upd();
+})();
+</script>
+
+<script>
+/* Масштабированная страница: убираем «хвост» высоты, который остаётся от 1920-макета */
+(() => {
+  const w = document.querySelector('.wrap');
+  const fix = () => { w.style.marginBottom = -(w.offsetHeight * (1 - (window.SK || 1))) + 'px'; };
+  fix(); addEventListener('resize', fix); addEventListener('load', fix);
+})();
+</script>
+</body>
+</html>
